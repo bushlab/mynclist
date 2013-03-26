@@ -9,8 +9,8 @@
 export PATH=$PATH:/usr/local/bin/
 echo ""
 echo "Installing MyNCList.py and dependencies..."
-tar -zxvf dist/MyNCList-1.0.tar.gz
-cd dist/MyNCList-1.0
+tar -zxvf MyNCList-1.0.tar.gz
+cd MyNCList-1.0
 python setup.py install
 
 # Use if global installation permissions not available

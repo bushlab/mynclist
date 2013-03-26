@@ -4,16 +4,21 @@ https://pypi.python.org/pypi/setuptools
 
 
 Automated Linux install:
-1a. `sudo MyNCList-install.sh`
-1b. `sudo MyNCList-install.sh --mysql`
+1. Change directory into dist/
+2a. `sudo MyNCList-install.sh`
+2b. `sudo MyNCList-install.sh --mysql`
 
-Option 1b will install mysql onto your local linux machine.
+Option 2b will install mysql onto your local linux machine.
 
 
 For manual Linux installation:
-1. `tar -zxvf dist/MyNCList-1.0.tar.gz`
-2. `sudo python setup.py install`
+1. `cd dist/`
+2. `tar -zxvf MyNCList-1.0.tar.gz`
+3. `cd MyNCList-1.0`
+4. `sudo python setup.py install`
 
 For manual Windows installation:
-1. Unzip dist/MyNCList-1.0.zip
-2. `python setup.py install`
+1. `cd dist/`
+2. Unzip MyNCList-1.0.zip
+3. `cd MyNCList-1.0`
+4. `python setup.py install`
