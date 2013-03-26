@@ -18,7 +18,13 @@ Automated Linux install:
 2a. `sudo MyNCList-install.sh`
 2b. `sudo MyNCList-install.sh --mysql`
 
-Option 2b will install mysql onto your local linux machine.
+If access to MySQL is not available, option 2b will install mysql onto your local 
+linux machine, and create a database called `nclist` to be used by MyNCList. Users
+should update their configuration files to reflect this information.
+
+Users with access to MySQL should create this database manually and specify the
+information in the configuration file. MyNCList.py will not attempt to create, 
+delete, or modify any database other than the one specified in the configuration file.
 
 
 For manual Linux installation:
