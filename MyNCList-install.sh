@@ -9,14 +9,15 @@
 export PATH=$PATH:/usr/local/bin/
 echo ""
 echo "Installing MyNCList.py and dependencies..."
-tar -zxvf MyNCList-1.0.tar.gz
-cd MyNCList-1.0
+tar -zxvf dist/MyNCList-1.0.tar.gz
+cd dist/MyNCList-1.0
 python setup.py install
 
 # Use if global installation permissions not available
 #python MyNCList-1.0/setup.py install --prefix
 
 if [ "$1"="--mysql" ]; then
+
   if ! command `mysql --help > /dev/null 2>&1`; then
     echo ""
     echo "Installing mysql locally..."
@@ -30,13 +31,13 @@ if [ "$1"="--mysql" ]; then
     echo ""
     echo "Local mysql installation exists."
   fi
-fi
 
-echo "Dropping nclist database"
-mysql -u root -e "DROP DATABASE nclist"
-echo ""
-echo "Creating nclist database"
-mysql -u root -e "CREATE DATABASE nclist"
+  echo "Dropping nclist database"
+  mysql -u root -e "DROP DATABASE nclist"
+  echo ""
+  echo "Creating nclist database"
+  mysql -u root -e "CREATE DATABASE nclist"
+fi
 
 echo ""
 echo "Installation complete."
