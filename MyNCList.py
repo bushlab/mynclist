@@ -24,7 +24,7 @@ config = {}
 
 class Node:
 	"""
-		Node class for use in a tee structure. Each node represents an
+		Node class for use in a tree structure. Each node represents an
 	annotationrange, the annotation, and a list of other Nodes nested within
 	it's range. Used to build a tree with dummy coded 0 Node as the root.
 	"""
