@@ -27,17 +27,23 @@ class Node:
 		Node class for use in a tree structure. Each node represents an
 	annotationrange, the annotation, and a list of other Nodes nested within
 	it's range. Used to build a tree with dummy coded 0 Node as the root.
+	Nodes declared with existing range boundaries do not increment subid.
 	"""
 	# Class variable definitions
-	subid = -1
+	subid  = -1
+	ranges = {} 
 	# Constructor
 	def __init__(self,annotation=(float("-inf"),float("inf"),"")):
 		self.start   = annotation[0]
 		self.end     = annotation[1]
 		self.exon_id = annotation[2]
 		self.sublist = []
-		Node.subid  += 1
-		self.sub     = Node.subid
+		if (self.start,self.end) in Node.ranges:
+			self.sub = Node.ranges[(self.start,self.end)]
+		else:
+			Node.subid  += 1
+			self.sub = Node.subid
+			Node.ranges[(self.start,self.end)] = self.sub
 
 def main(configfile):
 	"""
@@ -69,6 +75,18 @@ def main(configfile):
 		ranges = [(int(row[1])+offsets[row[0][3:]],
 				   int(row[2])+offsets[row[0][3:]],
 				   row[3]) for row in reader if row[0][3:] in offsets]
+
+
+	if 'concat_dups' in config and config['concat_dups'] == 'yes':
+		print("Concatanating annotations for duplicate ranges...")
+		temp = {}
+		for myrange in ranges:
+			anno = temp.get((myrange[0],myrange[1]),None)
+			anno = (anno+";"+myrange[2] if anno else myrange[2])
+			temp[(myrange[0],myrange[1])] = anno
+		ranges = [(x[0][0],x[0][1],x[1]) for x in temp.iteritems()]
+
+
 
 	print("Sorting ranges by `start`...")
 	ranges.sort()
@@ -116,17 +134,22 @@ def build_sublist(node,fout_node,fout_edge,fout_masterkey):
 	front = (0 if 'membership' in config and config['membership'] == 'last' else -1)
 	while ranges and ranges[front][0] >= node.start and ranges[front][1] <= node.end:
 		sub_node = (Node(ranges.popleft()) if front > -1 else Node(ranges.pop()))
-		if sub_node.sub > 0:
+		if sub_node.sub > 0 and sub_node.sub != node.sub:
 			write_node(sub_node,node,fout_node,fout_edge,fout_masterkey)
-		node.sublist.append(build_sublist(sub_node,fout_node,fout_edge,fout_masterkey))
+			node.sublist.append(build_sublist(sub_node,fout_node,fout_edge,fout_masterkey))
+		elif sub_node.sub > 0:
+			write_node(sub_node,node,fout_node,fout_edge,fout_masterkey,dup=True)
 	return node
 
-def write_node(node,parent,fout_node,fout_edge,fout_masterkey):
+def write_node(node,parent,fout_node,fout_edge,fout_masterkey,dup=False):
 	"""
 	Given a node and its parent, adds the node to the tree files.
+	If a duplicate range, write the new annotation to masterkey, but
+	do not add a new range.
 	"""
-	fout_node.write("%d\t%d\t%d\t%d\n" % (node.start,node.end,node.sub,parent.sub))
-	fout_edge.write("%d\t%d\n" % (node.sub,node.sub))
+	if not dup:
+		fout_node.write("%d\t%d\t%d\t%d\n" % (node.start,node.end,node.sub,parent.sub))
+		fout_edge.write("%d\t%d\n" % (node.sub,node.sub))
 	fout_masterkey.write("%d\t%s\n" % (node.sub,node.exon_id))
 
 def create_table(con):
