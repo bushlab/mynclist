@@ -60,7 +60,7 @@ def main(configfile):
 	# Read the config file
 	with open(configfile,'r') as fin:
 		reader = csv.reader(fin,delimiter=' ',skipinitialspace=True)
-		config = dict((row[0],row[1]) for row in reader if len(row) > 1)
+		config = dict((row[0].lower(),row[1]) for row in reader if len(row) > 1)
 
 	# Read the offsets file
 	with open(config['offset'],'r') as fin:
@@ -75,7 +75,6 @@ def main(configfile):
 		ranges = [(int(row[1])+offsets[row[0][3:]],
 				   int(row[2])+offsets[row[0][3:]],
 				   row[3]) for row in reader if row[0][3:] in offsets]
-
 
 	if 'concat_dups' in config and config['concat_dups'] == 'yes':
 		print("Concatanating annotations for duplicate ranges...")
@@ -114,7 +113,7 @@ def main(configfile):
 				build_sublist(node=Node(),fout_node=fout_node,fout_edge=fout_edge,fout_masterkey=fout_masterkey)
 
 	print("Populating database and creating procedures...")
-	with MySQLdb.connect(host=config['dbhost'],user=config['dbuser'],passwd=config['dbpass'],db=config['db']) as con:
+	with MySQLdb.connect(host=config['dbhost'],user=config['dbuser'],passwd=config['dbpass'],db=config['dbname']) as con:
 		create_table(con=con)
 		load_procedures(con=con)
 		load_tree(con=con)
@@ -159,14 +158,14 @@ def create_table(con):
 	"""
 	global config
 	try:
-		con.execute("DROP TABLE IF EXISTS %(db)s.%(label)s_node;" % config)
-		con.execute("DROP TABLE IF EXISTS %(db)s.%(label)s_edge;" % config)
-		con.execute("DROP TABLE IF EXISTS %(db)s.%(label)s_masterkey;" % config)
+		con.execute("DROP TABLE IF EXISTS %(dbname)s.%(label)s_node;" % config)
+		con.execute("DROP TABLE IF EXISTS %(dbname)s.%(label)s_edge;" % config)
+		con.execute("DROP TABLE IF EXISTS %(dbname)s.%(label)s_masterkey;" % config)
 	except MySQLdb.Warning:
 		pass # Ignore warnings when tables do not exist
-	con.execute("CREATE TABLE %(db)s.%(label)s_node (start BIGINT UNSIGNED DEFAULT NULL, end BIGINT UNSIGNED DEFAULT NULL, range_id INT UNSIGNED NOT NULL, sub INT UNSIGNED DEFAULT NULL, KEY sub_start_end (sub, start, end), KEY start_end (start, end), KEY range_id (range_id)) engine = MyISAM default charset = latin1;" % config)
-	con.execute("CREATE TABLE %(db)s.%(label)s_edge (range_id INT UNSIGNED NOT NULL, sub INT UNSIGNED NOT NULL, PRIMARY KEY (range_id, sub)) engine = MyISAM default charset = latin1;" % config)
-	con.execute("CREATE TABLE %(db)s.%(label)s_masterkey (range_id INT UNSIGNED NOT NULL, database_ids TEXT, PRIMARY KEY (range_id)) engine = MyISAM default charset = latin1;" % config)
+	con.execute("CREATE TABLE %(dbname)s.%(label)s_node (start BIGINT UNSIGNED DEFAULT NULL, end BIGINT UNSIGNED DEFAULT NULL, range_id INT UNSIGNED NOT NULL, sub INT UNSIGNED DEFAULT NULL, KEY sub_start_end (sub, start, end), KEY start_end (start, end), KEY range_id (range_id)) engine = MyISAM default charset = latin1;" % config)
+	con.execute("CREATE TABLE %(dbname)s.%(label)s_edge (range_id INT UNSIGNED NOT NULL, sub INT UNSIGNED NOT NULL, PRIMARY KEY (range_id, sub)) engine = MyISAM default charset = latin1;" % config)
+	con.execute("CREATE TABLE %(dbname)s.%(label)s_masterkey (range_id INT UNSIGNED NOT NULL, database_ids TEXT, PRIMARY KEY (range_id)) engine = MyISAM default charset = latin1;" % config)
 
 def load_procedures(con):
 	"""
@@ -193,9 +192,9 @@ def load_tree(con):
 	by parse_tree().
 	"""
 	global config
-	con.execute("LOAD DATA LOCAL INFILE '%(workdir)s/%(label)s.node' INTO TABLE %(db)s.%(label)s_node IGNORE 1 LINES;" % config)
-	con.execute("LOAD DATA LOCAL INFILE '%(workdir)s/%(label)s.edge' INTO TABLE %(db)s.%(label)s_edge IGNORE 1 LINES;" % config)
-	con.execute("LOAD DATA LOCAL INFILE '%(workdir)s/%(label)s.masterkey' INTO TABLE %(db)s.%(label)s_masterkey IGNORE 1 LINES;" % config)
+	con.execute("LOAD DATA LOCAL INFILE '%(workdir)s/%(label)s.node' INTO TABLE %(dbname)s.%(label)s_node IGNORE 1 LINES;" % config)
+	con.execute("LOAD DATA LOCAL INFILE '%(workdir)s/%(label)s.edge' INTO TABLE %(dbname)s.%(label)s_edge IGNORE 1 LINES;" % config)
+	con.execute("LOAD DATA LOCAL INFILE '%(workdir)s/%(label)s.masterkey' INTO TABLE %(dbname)s.%(label)s_masterkey IGNORE 1 LINES;" % config)
 
 if __name__ == "__main__":
 	# Pass the config filename to main()
