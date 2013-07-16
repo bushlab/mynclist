@@ -1,5 +1,4 @@
 MyNCList.py
-README.txt
 setup.py
 MyNCList.egg-info/PKG-INFO
 MyNCList.egg-info/SOURCES.txt
